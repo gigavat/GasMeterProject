@@ -44,7 +44,7 @@ String apiKeyValue = "1234567890";
 const long interval = 60*1000; 
 const long intervalWhenFail = 10*1000;
 
-const long healthCheckInterval = 60*1000;
+const long healthCheckInterval = 60*60*1000;
 
 // volatile long lowDebounce = 0;
 // volatile long highDebounce = 0;
@@ -79,49 +79,6 @@ const uint32_t connectTimeoutMs = 10000;
 
 
 ESP8266WiFiMulti wifiMulti;
-
-// ======================================================================
-// void slog(String log) {
-//   Serial.print("LOG: ");
-//   Serial.println(log);
-// }
-// // ======================================================================
-// void IRAM_ATTR onPulse_OLD() {
-//   // detachInterrupt(pin);
-//   long reading = digitalRead(pin);
-//   digitalWrite( led, reading );
-//   switch( reading ) {
-//     case LOW:  // SWITCH DOWN = ON
-//       slog("PULSE");
-//       pulseCount++;
-//       break;
-//     case HIGH: // SWITCH UP = OFF
-//       break;
-//   }
-//   // attachInterrupt(digitalPinToInterrupt(pin), onPulse, CHANGE);
-// }
-
-// void IRAM_ATTR onPulse() {
-//   long curTime = millis();
-//   long reading = digitalRead(pin);
-
-//   digitalWrite( led, reading );
-  
-//   switch( reading ) {
-//     case LOW: // SWITCH DOWN = ON
-//       if (curTime - lowDebounce >= debounceTimeout) {
-//         needPulse = true;
-//       } else {
-//         needPulse = false;
-//       }
-//       lowDebounce = curTime;
-//       break;
-//     case HIGH: // SWITCH UP = OFF
-//       highDebounce = curTime;
-//       break;
-//   }
-// }
-
 
 volatile long lowTime = 0;
 

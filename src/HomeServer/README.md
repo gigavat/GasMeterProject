@@ -18,13 +18,17 @@ A .NET 8 Web API service for receiving and storing metrics with PostgreSQL datab
 
 ## Setup
 
-### 1. Configure API Key
+### 1. Configure API Key and Pulse Multiplier
 
-Update the `ApiKey` value in `docker-compose.yml` or `appsettings.json`:
+Update the `ApiKey` and `PulseMultiplier` values in `docker-compose.yml` or `appsettings.json`:
+
 ```yaml
 environment:
   - ApiKey=your-secret-api-key-change-this-in-production
+  - PulseMultiplier=1.0
 ```
+
+The `PulseMultiplier` is used to convert pulse counts to actual meter readings. For example, if 1 pulse = 0.1 units, set `PulseMultiplier=0.1`.
 
 ### 2. Run with Docker Compose
 
@@ -81,6 +85,24 @@ curl -X GET http://localhost:8080/api/metrics \
 ```bash
 curl -X GET http://localhost:8080/api/metrics/1 \
   -H "X-API-Key: your-secret-api-key-change-this-in-production"
+```
+
+### Get Meter Data: GET /api/metrics/meter-data
+
+Get the total meter reading by summing all pulse counts and multiplying by the configured PulseMultiplier:
+
+```bash
+curl -X GET http://localhost:8080/api/metrics/meter-data \
+  -H "X-API-Key: your-secret-api-key-change-this-in-production"
+```
+
+Response:
+```json
+{
+  "totalPulseCount": 1500,
+  "pulseMultiplier": 1.0,
+  "meterData": 1500.0
+}
 ```
 
 ## Audit & Monitoring

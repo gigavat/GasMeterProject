@@ -15,15 +15,18 @@ public class MetricsController : ControllerBase
     private readonly MetricsDbContext _context;
     private readonly ILogger<MetricsController> _logger;
     private readonly IAuditService _auditService;
+    private readonly IConfiguration _configuration;
 
     public MetricsController(
         MetricsDbContext context, 
         ILogger<MetricsController> logger,
-        IAuditService auditService)
+        IAuditService auditService,
+        IConfiguration configuration)
     {
         _context = context;
         _logger = logger;
         _auditService = auditService;
+        _configuration = configuration;
     }
 
     [HttpPost]
@@ -155,6 +158,70 @@ public class MetricsController : ControllerBase
         );
 
         return Ok(metrics);
+    }
+
+    [HttpGet("meter-data")]
+    public async Task<IActionResult> GetMeterData()
+    {
+        var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+        var userAgent = Request.Headers["User-Agent"].ToString();
+
+        try
+        {
+            // Get PulseMultiplier from configuration (default to 0.01 if not set)
+            var pulseMultiplier = _configuration.GetValue<double>("PulseMultiplier", 0.01);
+
+            // Sum all PulseCount values from all metrics
+            var totalPulseCount = await _context.Metrics
+                .SumAsync(m => m.PulseCount);
+
+            // Calculate meter data: total pulse count multiplied by pulse multiplier
+            var meterData = totalPulseCount * pulseMultiplier;
+
+            _logger.LogInformation("Meter data calculated: TotalPulseCount={TotalPulseCount}, PulseMultiplier={PulseMultiplier}, MeterData={MeterData}",
+                totalPulseCount, pulseMultiplier, meterData);
+
+            // Log API request
+            await _auditService.LogEventAsync(
+                eventType: "ApiRequest",
+                description: $"Meter data retrieved: TotalPulseCount={totalPulseCount}, PulseMultiplier={pulseMultiplier}, MeterData={meterData}",
+                source: clientIp,
+                userAgent: userAgent,
+                requestPath: "/api/metrics/meter-data",
+                requestMethod: "GET",
+                statusCode: 200,
+                additionalData: System.Text.Json.JsonSerializer.Serialize(new 
+                { 
+                    TotalPulseCount = totalPulseCount,
+                    PulseMultiplier = pulseMultiplier,
+                    MeterData = meterData
+                })
+            );
+
+            return Ok(new
+            {
+                TotalPulseCount = totalPulseCount,
+                PulseMultiplier = pulseMultiplier,
+                MeterData = meterData
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving meter data");
+            
+            await _auditService.LogEventAsync(
+                eventType: "Error",
+                description: $"Error retrieving meter data: {ex.Message}",
+                source: clientIp,
+                userAgent: userAgent,
+                requestPath: "/api/metrics/meter-data",
+                requestMethod: "GET",
+                statusCode: 500,
+                additionalData: ex.ToString()
+            );
+            
+            return StatusCode(500, "An error occurred while retrieving meter data");
+        }
     }
 }
 
