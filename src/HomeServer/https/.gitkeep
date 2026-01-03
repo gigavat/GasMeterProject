@@ -1,0 +1,3 @@
+# This file ensures the https directory is tracked by git
+# Certificate files should be generated using generate-certificate.sh or generate-certificate.ps1
+
