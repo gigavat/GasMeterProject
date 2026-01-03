@@ -31,9 +31,9 @@ int wifiStatus = WL_IDLE_STATUS;     // the Wifi radio's status
 // int pinState;             // the current reading from the input pin
 // int lastPinState = LOW;   // the previous reading from the input pin
 
-String host = "192.168.6.114"; //"gigavat.keenetic.pro";
-int port = 8080; //30080; 
-int httpsPort = 30443;       
+String host = "gigavat.keenetic.pro"; //"192.168.6.114"; //
+int port = 2884; // 8080; //30080; 
+//int httpsPort = 30443;       
 String url;
 
 String apiKeyHeader = "X-API-Key";
