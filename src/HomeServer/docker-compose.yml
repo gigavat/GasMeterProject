@@ -26,7 +26,7 @@ services:
       dockerfile: Dockerfile
     container_name: metrics-api
     ports:
-      - "8080:80"
+      - "2884:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
